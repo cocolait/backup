@@ -36,5 +36,5 @@ return [
 ```php
 // 再控制器中调用
 $dir = "./backup/sql";
-$data = \auth\Backup::instance()->backUp($dir);
+$data = \cocolait\sql\Backup::instance()->backUp($dir);
 ```
