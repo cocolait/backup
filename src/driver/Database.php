@@ -62,7 +62,7 @@ class Database
         $recordset = $this->dbh->query($strSql);
         $this->getPDOError();
         if ($recordset) {
-            $recordset->setFetchMode(PDO::FETCH_ASSOC);
+            $recordset->setFetchMode(\PDO::FETCH_ASSOC);
             if ($queryMode == 'All') {
                 $result = $recordset->fetchAll();
             } elseif ($queryMode == 'Row') {
