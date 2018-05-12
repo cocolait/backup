@@ -117,10 +117,9 @@ class Backup{
         //数据库的备份路径
         $fileDir = $path . '/'. $times;
 
-        // 检测目录是否被创建
-        if(!is_dir($fileDir)) {
-            mkdir($fileDir,0777);
-        }
+        // 创建目录
+        $this->directory($fileDir);
+
         //文件注释区域
         $this->content='-- Cocolait博客'."\n";
         $this->content.='-- http://www.mgchen.com'."\n";
@@ -155,5 +154,15 @@ class Backup{
         //写入文件
         file_put_contents($tableWFile, $this->content);
         return ['code' => 200, 'msg' => '备份成功','time' => (time()-$start_time) . "秒"];
+    }
+
+    /**
+     * 递归创建目录
+     * @param $dir
+     * @return bool
+     */
+    protected  function  directory($dir)
+    {
+        return  is_dir ( $dir ) or $this->directory(dirname($dir)) and  mkdir ($dir , 0777);
     }
 }
