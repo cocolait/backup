@@ -23,7 +23,7 @@ composer require cocolait/backup
 <?php
 // 加载扩展 TODO 如果你使用的框架已支持composer那么这一行可直接忽略
 require_once 'vendor/autoload.php';
-// backup($path = '备份路径', $tableArray = [需要备份的表集合], $bool = '是否同时备份数据 默认false')
+// backup($path = '备份路径', $tableArray = [需要备份的表集合], $bool = '是否同时备份数据 默认false',['is_compress' => '是否写入内容文件进行压缩','is_download' => '是否进行下载'])
 $config = [
         // 服务器地址
         'host'        => 'xx.xx.xx.xx',
@@ -38,7 +38,12 @@ $config = [
         // 字符编码
         'charset'     => 'utf8'
 ];
+// 备份
 $dir = "./backup/sql";//备份路径
-$data = \cocolait\sql\Backup::instance($config)->backUp($dir);
+$data = cocolait\sql\Backup::instance($config)->backUp($dir,[],true,['is_compress' => 0]);
+print_r($data);die;
+
+// 还原
+$data = cocolait\sql\Backup::instance($config)->recover('xxx_20180512072455_194757120.sql',$dir);
 print_r($data);die;
 ```

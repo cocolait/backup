@@ -339,7 +339,7 @@ class Database
      *
      * @param String $strErrMsg
      */
-    private function outputError($strErrMsg)
+    protected function outputError($strErrMsg)
     {
         throw new \Exception('MySQL Error: '.$strErrMsg);
     }
