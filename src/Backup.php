@@ -1,40 +1,20 @@
 <?php
 namespace cocolait\sql;
-use think\Config;
-use think\Db;
-use think\Response;
 class Backup{
-    // 对象实例
     protected static $instance;
 
-    // 内容写入
     protected $content;
 
-    // 数据链接参数
-    protected $connection = [];
+    protected $pdo;
+
+    protected $options;
 
     protected function __construct($options = []){
-        $this->connection = [
-            // 数据库类型
-            'type'            => 'mysql',
-            // 服务器地址
-            'hostname'        => isset($options['hostname']) ? $options['hostname'] : Config::get('backUp.hostname'),
-            // 数据库名
-            'database'        => isset($options['database']) ? $options['database'] : Config::get('backUp.database'),
-            // 用户名
-            'username'        => isset($options['username']) ? $options['username'] : Config::get('backUp.username'),
-            // 密码
-            'password'        => isset($options['password']) ? $options['password'] : Config::get('backUp.password'),
-            // 端口
-            'hostport'        => isset($options['hostport']) ? $options['hostport'] : Config::get('backUp.hostport'),
-            // 数据库编码默认采用utf8
-            'charset'         => 'utf8',
-            // 数据库表前缀
-            'prefix'          => isset($options['prefix']) ? $options['prefix'] : Config::get('backUp.prefix'),
-        ];
-        if (!$this->connection['hostname'] || !$this->connection['database'] || !$this->connection['username'] || !$this->connection['password'] || !$this->connection['hostport']) {
-            throw new \think\Exception('备份数据库链接参数异常');
+        if (!extension_loaded('pdo')) {
+            throw new \Exception("pdo 扩展未加载");
         }
+        $this->pdo = \cocolait\sql\driver\Database::instance($options);
+        $this->options = $options;
     }
 
     /**
@@ -52,7 +32,7 @@ class Backup{
 
     //获取单表的基本信息
     public function getTableInfo($table=''){
-        $result = Db::connect($this->connection)->query('SHOW TABLE STATUS FROM '.$this->connection['database'].' WHERE Name=\''.$table.'\'');
+        $result = $this->pdo->query('SHOW TABLE STATUS FROM '. $this->options['database'].' WHERE Name=\''.$table.'\'');
         $num_rows = count($result);
         if($num_rows>0){
             return $num_rows;
@@ -63,18 +43,17 @@ class Backup{
 
     //获取所有的表名
     public function getMysqlTableNameArray(){
-        $tnamelen= strlen($this->connection['prefix']);
-        return Db::connect($this->connection)->query('SHOW TABLE STATUS FROM '.$this->connection['database'].' WHERE "'.$this->connection['prefix'].'"=substring(Name,1,'.$tnamelen.')');
+        return $this->pdo->query("SHOW TABLE STATUS FROM {$this->options['database']}");
     }
 
     //获取创建表的信息
     public function getCreateTableInfo($table=''){
-        return Db::connect($this->connection)->query("SHOW CREATE TABLE ".$table);
+        return $this->pdo->query("SHOW CREATE TABLE ".$table);
     }
 
     //获取表插入的数据
     protected function getTableField($table) {
-        $data = Db::connect($this->connection)->query("SELECT * FROM {$table}");
+        $data = $this->pdo->query("SELECT * FROM {$table}");
         $str = "\r\n /* 插入 {$table} 表的数据 */";
         if ($data) {
             foreach ($data as $v) {
@@ -98,7 +77,7 @@ class Backup{
      * @param array $tableArray 需要备份的表集合 不传递备份所有表
      * @param bool $bool  是否同时备份数据 默认备份
      * @return string
-     * @throws \think\Exception
+     * @throws \Exception
      */
     public function backUp($path, $tableArray = [], $bool = false){
         $start_time = time();
@@ -112,7 +91,7 @@ class Backup{
             $tableArray = $new_data;
         }
         if (!$path) {
-            throw new \think\Exception('请传递备份路径');
+            throw new \Exception('请传递备份路径');
         }
         //数据库的备份路径
         $fileDir = $path . '/'. $times;
@@ -121,11 +100,11 @@ class Backup{
         $this->directory($fileDir);
 
         //文件注释区域
-        $this->content='-- Cocolait博客'."\n";
+        $this->content ='-- Cocolait博客'."\n";
         $this->content.='-- http://www.mgchen.com'."\n";
         $this->content.='-- 字符集 UTF-8' . "\n";
-        $backupdate=date("Y 年 m 月 d 日 H:i:s");
-        $this->content.='-- 生成日期: '.$backupdate."\n\n";
+        $backUpdate=date("Y 年 m 月 d 日 H:i:s");
+        $this->content.='-- 生成日期: '. $backUpdate. "\n\n";
 
         foreach($tableArray as $table){
             $this->content .= 'DROP TABLE IF EXISTS '.$table.';'."\n";

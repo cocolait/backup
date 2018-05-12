@@ -1,10 +1,11 @@
 {
     "name": "cocolait/backup",
-    "description": "thinkPHP 5.0.X MySQL备份扩展",
+    "description": "PHP  Pdo MySQL备份扩展",
     "type": "library",
     "homepage": "http://www.mgchen.com/",
     "require": {
-        "php": ">=5.4.0"
+        "php": ">=5.3.0",
+        ext-pdo: *
     },
     "license": "Apache-2.0",
     "authors": [
